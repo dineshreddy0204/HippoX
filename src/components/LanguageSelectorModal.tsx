@@ -60,15 +60,17 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({
   ];
 
   const { total, languages: filteredLanguages } = useMemo(() => {
+    const trimmed = searchQuery.trim();
+    // When searching by text (name, native script, ISO code), search complete 7,191 registry
     return registryEngine.searchLanguages(
-      searchQuery,
+      trimmed,
       {
-        family: selectedFamily,
-        region: selectedRegion,
+        family: trimmed ? undefined : selectedFamily,
+        region: trimmed ? undefined : selectedRegion,
         capability: selectedCapability === 'all' ? undefined : selectedCapability,
         favoritesOnly
       },
-      pageSize * page,
+      Math.max(100, pageSize * page),
       0
     );
   }, [searchQuery, selectedFamily, selectedRegion, selectedCapability, favoritesOnly, page]);
@@ -90,103 +92,102 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({
     );
   };
 
+  const isAutoDetectVisible = includeAutoDetect && (
+    !searchQuery.trim() || 
+    'auto detect language'.includes(searchQuery.toLowerCase().trim()) ||
+    'detect'.includes(searchQuery.toLowerCase().trim())
+  );
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1A1918]/40 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl border border-[#EAE6DC] shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-[#1A1918]/50 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-[#EAE6DC] shadow-2xl w-full max-w-4xl max-h-[92vh] sm:max-h-[85vh] flex flex-col overflow-hidden">
         {/* Modal Header */}
-        <div className="p-5 border-b border-[#EAE6DC] flex items-center justify-between bg-[#FCFBF8]">
+        <div className="p-4 sm:p-5 border-b border-[#EAE6DC] flex items-center justify-between bg-[#FCFBF8]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#F4EAD2] text-[#8C6D23] flex items-center justify-center">
-              <Globe className="w-5 h-5" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#F4EAD2] text-[#8C6D23] flex items-center justify-center shrink-0">
+              <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-[#1A1918]">{title}</h2>
-              <p className="text-xs text-[#7A766D]">
-                Displaying indexed living languages from our 7,191 Global Registry
+              <h2 className="text-sm sm:text-base font-bold text-[#1A1918]">{title}</h2>
+              <p className="text-[11px] sm:text-xs text-[#7A766D]">
+                Search all 7,191 living languages by name, native script, or ISO code
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-2 rounded-xl text-[#7A766D] hover:text-[#1A1918] hover:bg-[#F4F1EA] transition-colors cursor-pointer"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Search & Filter Bar */}
-        <div className="p-4 border-b border-[#EAE6DC] bg-[#FAF8F5] space-y-3">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[#A69B88] absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                placeholder="Search by English name, native script, ISO code (e.g., eng, spa, हिन्दी, Español)..."
-                className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl border border-[#E0DBD0] text-xs focus:outline-none focus:border-[#C5A059] shadow-xs text-[#1A1918]"
-                autoFocus
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#9E9A90] hover:text-[#1A1918]"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
+        {/* Primary Search Bar at Very Top Above Language List */}
+        <div className="p-3 sm:p-4 border-b border-[#EAE6DC] bg-[#FAF8F5] space-y-2.5 sticky top-0 z-10 shadow-xs">
+          <div className="relative flex items-center">
+            <Search className="w-4 h-4 text-[#8C6D23] absolute left-3.5 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+              placeholder="Search language..."
+              className="w-full pl-10 pr-20 py-2.5 sm:py-3 bg-white rounded-xl border border-[#DCD6C7] text-sm text-[#1A1918] placeholder-[#9E9A90] font-medium focus:outline-none focus:border-[#C5A059] focus:ring-2 focus:ring-[#C5A059]/20 shadow-xs transition-all"
+              autoFocus
+            />
+            {searchQuery && (
+              <button
+                onClick={() => { setSearchQuery(''); setPage(1); }}
+                className="absolute right-3 px-2 py-1 text-xs font-semibold text-[#8C6D23] hover:text-[#1A1918] bg-[#F4EAD2] rounded-lg transition-colors cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {/* Quick Filters / Search Context */}
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+            {searchQuery.trim() ? (
+              <div className="text-[11px] font-semibold text-[#8C6D23] flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Searching all 7,191 living languages: <strong>{total}</strong> {total === 1 ? 'match' : 'matches'}</span>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-1.5 text-[11px] overflow-x-auto max-w-full pb-0.5">
+                <span className="text-[#8A857A] font-semibold">Family:</span>
+                {families.slice(0, 5).map((fam) => (
+                  <button
+                    key={fam}
+                    onClick={() => { setSelectedFamily(fam); setPage(1); }}
+                    className={`px-2 py-0.5 rounded-lg border transition-colors cursor-pointer whitespace-nowrap ${
+                      selectedFamily === fam
+                        ? 'bg-[#1A1918] text-white border-[#1A1918] font-bold'
+                        : 'bg-white border-[#E0DBD0] text-[#615E57] hover:bg-[#F4F1EA]'
+                    }`}
+                  >
+                    {fam}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <button
               onClick={() => setFavoritesOnly(!favoritesOnly)}
-              className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 border transition-all cursor-pointer shrink-0 ${
                 favoritesOnly
                   ? 'bg-[#F4EAD2] border-[#C5A059] text-[#8C6D23]'
                   : 'bg-white border-[#E0DBD0] text-[#615E57] hover:bg-[#FAF8F5]'
               }`}
             >
-              <Star className={`w-3.5 h-3.5 ${favoritesOnly ? 'fill-[#C5A059] text-[#C5A059]' : ''}`} />
+              <Star className={`w-3 h-3 ${favoritesOnly ? 'fill-[#C5A059] text-[#C5A059]' : ''}`} />
               Favorites
             </button>
-          </div>
-
-          {/* Families and Regions Filter Chips */}
-          <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-            <span className="text-[#8A857A] font-semibold mr-1">Family:</span>
-            {families.slice(0, 6).map((fam) => (
-              <button
-                key={fam}
-                onClick={() => { setSelectedFamily(fam); setPage(1); }}
-                className={`px-2 py-0.5 rounded-lg border transition-colors cursor-pointer ${
-                  selectedFamily === fam
-                    ? 'bg-[#1A1918] text-white border-[#1A1918] font-bold'
-                    : 'bg-white border-[#E0DBD0] text-[#615E57] hover:bg-[#F4F1EA]'
-                }`}
-              >
-                {fam}
-              </button>
-            ))}
-
-            <span className="text-[#8A857A] font-semibold ml-2 mr-1">Capability:</span>
-            {(['all', 'asr', 'translation', 'grammar', 'tts'] as const).map((cap) => (
-              <button
-                key={cap}
-                onClick={() => { setSelectedCapability(cap); setPage(1); }}
-                className={`px-2 py-0.5 rounded-lg border uppercase text-[10px] font-bold transition-colors cursor-pointer ${
-                  selectedCapability === cap
-                    ? 'bg-[#C5A059] text-white border-[#C5A059]'
-                    : 'bg-white border-[#E0DBD0] text-[#615E57] hover:bg-[#F4F1EA]'
-                }`}
-              >
-                {cap}
-              </button>
-            ))}
           </div>
         </div>
 
         {/* Language Grid & List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {includeAutoDetect && (
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2">
+          {isAutoDetectVisible && (
             <div
               onClick={() => {
                 onSelect({
@@ -210,7 +211,7 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({
                 });
                 onClose();
               }}
-              className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+              className={`p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                 selectedCode === 'auto'
                   ? 'bg-[#F4EAD2] border-[#C5A059] shadow-xs'
                   : 'bg-white border-[#EAE6DC] hover:border-[#C5A059]/60 hover:bg-[#FBF9F5]'
@@ -234,11 +235,11 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({
           {filteredLanguages.length === 0 ? (
             <div className="py-12 text-center text-[#8A857A]">
               <AlertCircle className="w-8 h-8 mx-auto mb-2 text-[#C5A059]" />
-              <div className="text-xs font-semibold text-[#1A1918]">No language found</div>
-              <div className="text-[11px]">Try adjusting your search query or filter tags</div>
+              <div className="text-xs font-semibold text-[#1A1918]">No language found for "{searchQuery}"</div>
+              <div className="text-[11px] mt-1">Try typing the English name, native script, or 3-letter ISO 639-3 code</div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
               {filteredLanguages.map((lang) => {
                 const isSelected = selectedCode === lang.iso_639_3 || selectedCode === lang.iso_639_1;
 
@@ -268,14 +269,14 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({
                         </div>
                       </div>
                       {isSelected && (
-                        <div className="w-5 h-5 rounded-full bg-[#C5A059] text-white flex items-center justify-center">
+                        <div className="w-5 h-5 rounded-full bg-[#C5A059] text-white flex items-center justify-center shrink-0">
                           <Check className="w-3 h-3" />
                         </div>
                       )}
                     </div>
 
                     <div className="flex items-center justify-between text-[10px] text-[#8C877D] border-t border-[#F2EEE4] pt-2 mt-1">
-                      <span className="truncate max-w-[150px]">{lang.language_family}</span>
+                      <span className="truncate max-w-[130px] sm:max-w-[150px]">{lang.language_family}</span>
                       <div className="flex items-center gap-1">
                         {renderStatusBadge(lang.asr_status, 'ASR')}
                         {renderStatusBadge(lang.translation_status, 'Trans')}
@@ -291,7 +292,7 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({
 
           {/* Load More Pagination */}
           {filteredLanguages.length < total && (
-            <div className="pt-3 text-center">
+            <div className="pt-3 pb-2 text-center">
               <button
                 onClick={() => setPage(p => p + 1)}
                 className="px-4 py-2 rounded-xl bg-[#FAF6EC] border border-[#E2D4B2] text-xs font-bold text-[#8C6D23] hover:bg-[#F4EAD2] transition-colors cursor-pointer"
@@ -303,9 +304,9 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-3.5 border-t border-[#EAE6DC] bg-[#FCFBF8] flex items-center justify-between text-xs text-[#7A756C]">
+        <div className="p-3 sm:p-3.5 border-t border-[#EAE6DC] bg-[#FCFBF8] flex items-center justify-between text-xs text-[#7A756C]">
           <span>
-            Target Quality: <strong>9.8/10</strong> &bull; Total Living Index: <strong>7,240</strong>
+            Living Languages Indexed: <strong>7,191</strong>
           </span>
           <button
             onClick={onClose}

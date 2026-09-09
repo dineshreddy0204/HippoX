@@ -5,6 +5,7 @@ import {
   Upload, FileAudio, Loader2, Info
 } from 'lucide-react';
 import { speakText } from '../utils/audioPlayer';
+import { LanguageSelectorModal } from '../components/LanguageSelectorModal';
 
 export const VoiceView: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -14,6 +15,8 @@ export const VoiceView: React.FC = () => {
   );
   const [translatedTranscript, setTranslatedTranscript] = useState('');
   const [targetLang, setTargetLang] = useState('spa');
+  const [targetLangName, setTargetLangName] = useState('Spanish');
+  const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -440,22 +443,18 @@ export const VoiceView: React.FC = () => {
             className="w-full p-3 rounded-xl bg-[#FAF8F5] border border-[#E0DBD0] text-xs text-[#1A1918] resize-none focus:outline-none focus:border-[#C5A059]"
           />
 
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
             <div className="flex items-center gap-2">
               <span className="text-xs text-[#5A5750] font-semibold">Translate to:</span>
-              <select
-                value={targetLang}
-                onChange={(e) => setTargetLang(e.target.value)}
-                className="text-xs font-bold bg-[#FAF8F5] border border-[#E0DBD0] rounded-lg px-2 py-1 cursor-pointer"
+              <button
+                onClick={() => setIsLanguageModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#E0DBD0] hover:border-[#C5A059] transition-all text-xs font-bold text-[#8C6D23] shadow-xs cursor-pointer group"
               >
-                <option value="spa">Spanish (spa)</option>
-                <option value="fra">French (fra)</option>
-                <option value="deu">German (deu)</option>
-                <option value="jpn">Japanese (jpn)</option>
-                <option value="cmn">Mandarin (cmn)</option>
-                <option value="hin">Hindi (hin)</option>
-                <option value="ara">Arabic (ara)</option>
-              </select>
+                <span className="group-hover:text-[#1A1918] transition-colors">{targetLangName}</span>
+                <span className="text-[10px] font-mono bg-[#FAF4E6] px-1.5 py-0.2 rounded border border-[#EEDBBA]">
+                  {targetLang.toUpperCase()}
+                </span>
+              </button>
             </div>
 
             <button
@@ -517,6 +516,18 @@ export const VoiceView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <LanguageSelectorModal
+        isOpen={isLanguageModalOpen}
+        onClose={() => setIsLanguageModalOpen(false)}
+        selectedCode={targetLang}
+        onSelect={(lang) => {
+          setTargetLang(lang.iso_639_3);
+          setTargetLangName(lang.name);
+        }}
+        title="Select Voice Translation Language"
+        includeAutoDetect={false}
+      />
     </div>
   );
 };

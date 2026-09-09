@@ -4,10 +4,13 @@ import {
   FileCheck, Globe, Loader2, ArrowRight, Info
 } from 'lucide-react';
 import { DocumentTranslationResult } from '../types';
+import { LanguageSelectorModal } from '../components/LanguageSelectorModal';
 
 export const DocumentsView: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [targetLang, setTargetLang] = useState('spa');
+  const [targetLangName, setTargetLangName] = useState('Spanish');
+  const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [docResult, setDocResult] = useState<DocumentTranslationResult | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -179,20 +182,17 @@ export const DocumentsView: React.FC = () => {
           </button>
 
           {selectedFile && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-[#5A5750]">Target:</span>
-              <select
-                value={targetLang}
-                onChange={(e) => setTargetLang(e.target.value)}
-                className="text-xs font-bold bg-[#FAF8F5] border border-[#E0DBD0] rounded-xl px-3 py-1.5 cursor-pointer"
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-[#5A5750] font-semibold">Target:</span>
+              <button
+                onClick={() => setIsLanguageModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#E0DBD0] hover:border-[#C5A059] transition-all text-xs font-bold text-[#8C6D23] shadow-xs cursor-pointer group"
               >
-                <option value="spa">Spanish (spa)</option>
-                <option value="fra">French (fra)</option>
-                <option value="deu">German (deu)</option>
-                <option value="cmn">Mandarin (cmn)</option>
-                <option value="ara">Arabic (ara)</option>
-                <option value="jpn">Japanese (jpn)</option>
-              </select>
+                <span className="group-hover:text-[#1A1918] transition-colors">{targetLangName}</span>
+                <span className="text-[10px] font-mono bg-[#FAF4E6] px-1.5 py-0.2 rounded border border-[#EEDBBA]">
+                  {targetLang.toUpperCase()}
+                </span>
+              </button>
 
               <button
                 onClick={handleTranslateDocument}
@@ -279,6 +279,18 @@ export const DocumentsView: React.FC = () => {
           </div>
         </div>
       )}
+
+      <LanguageSelectorModal
+        isOpen={isLanguageModalOpen}
+        onClose={() => setIsLanguageModalOpen(false)}
+        selectedCode={targetLang}
+        onSelect={(lang) => {
+          setTargetLang(lang.iso_639_3);
+          setTargetLangName(lang.name);
+        }}
+        title="Select Document Translation Language"
+        includeAutoDetect={false}
+      />
     </div>
   );
 };

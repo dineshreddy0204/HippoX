@@ -4,9 +4,12 @@ import {
   ArrowRight, RefreshCw, Check, Copy, Bookmark, Lightbulb, Loader2
 } from 'lucide-react';
 import { GrammarResult, GrammarIssue } from '../types';
+import { LanguageSelectorModal } from '../components/LanguageSelectorModal';
 
 export const GrammarView: React.FC = () => {
   const [language, setLanguage] = useState('eng');
+  const [languageName, setLanguageName] = useState('English');
+  const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
   const [inputText, setInputText] = useState(
     'She go to the international conference yesterday and have spoke about artificial intelligence, but their was many questions.'
   );
@@ -167,19 +170,15 @@ export const GrammarView: React.FC = () => {
         {/* Language Picker */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-[#5A5750]">Language:</span>
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="px-3 py-2 bg-white border border-[#E0DBD0] rounded-xl text-xs font-bold text-[#1A1918] focus:outline-none focus:border-[#C5A059] shadow-xs cursor-pointer"
+          <button
+            onClick={() => setIsLanguageModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#E0DBD0] hover:border-[#C5A059] transition-all text-xs font-bold text-[#8C6D23] shadow-xs cursor-pointer group"
           >
-            <option value="eng">English (eng)</option>
-            <option value="spa">Spanish (spa)</option>
-            <option value="fra">French (fra)</option>
-            <option value="deu">German (deu)</option>
-            <option value="jpn">Japanese (jpn)</option>
-            <option value="cmn">Mandarin (cmn)</option>
-            <option value="hin">Hindi (hin)</option>
-          </select>
+            <span className="group-hover:text-[#1A1918] transition-colors">{languageName}</span>
+            <span className="text-[10px] font-mono bg-[#FAF4E6] px-1.5 py-0.2 rounded border border-[#EEDBBA]">
+              {language.toUpperCase()}
+            </span>
+          </button>
         </div>
       </div>
 
@@ -437,6 +436,18 @@ export const GrammarView: React.FC = () => {
           )}
         </div>
       )}
+
+      <LanguageSelectorModal
+        isOpen={isLanguageModalOpen}
+        onClose={() => setIsLanguageModalOpen(false)}
+        selectedCode={language}
+        onSelect={(lang) => {
+          setLanguage(lang.iso_639_3);
+          setLanguageName(lang.name);
+        }}
+        title="Select Grammar Practice Language"
+        includeAutoDetect={false}
+      />
     </div>
   );
 };

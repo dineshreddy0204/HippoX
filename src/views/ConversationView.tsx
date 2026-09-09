@@ -236,25 +236,19 @@ export const ConversationView: React.FC = () => {
         )}
 
         {/* Languages Strip */}
-        <div className="p-4 border-b border-[#EAE6DC] bg-[#FCFBF8] flex items-center justify-between">
+        <div className="p-3 sm:p-4 border-b border-[#EAE6DC] bg-[#FCFBF8] flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#C5A059]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#C5A059] shrink-0" />
             <span className="text-xs font-bold text-[#1A1918]">Speaker 1:</span>
-            <select
-              value={langA.code}
-              onChange={(e) => {
-                const names: any = { eng: 'English', fra: 'French', deu: 'German', jpn: 'Japanese', spa: 'Spanish', cmn: 'Mandarin' };
-                setLangA({ code: e.target.value, name: names[e.target.value] || e.target.value });
-              }}
-              className="text-xs font-bold text-[#8C6D23] bg-white border border-[#E0DBD0] rounded-lg px-2 py-1 cursor-pointer"
+            <button
+              onClick={() => setIsSelectingA(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#E0DBD0] hover:border-[#C5A059] transition-all text-xs font-bold text-[#8C6D23] shadow-xs cursor-pointer group"
             >
-              <option value="eng">English (eng)</option>
-              <option value="fra">French (fra)</option>
-              <option value="deu">German (deu)</option>
-              <option value="jpn">Japanese (jpn)</option>
-              <option value="spa">Spanish (spa)</option>
-              <option value="cmn">Mandarin (cmn)</option>
-            </select>
+              <span className="group-hover:text-[#1A1918] transition-colors">{langA.name}</span>
+              <span className="text-[10px] font-mono bg-[#FAF4E6] px-1.5 py-0.2 rounded border border-[#EEDBBA]">
+                {langA.code.toUpperCase()}
+              </span>
+            </button>
           </div>
 
           <button
@@ -266,23 +260,17 @@ export const ConversationView: React.FC = () => {
           </button>
 
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#3B82F6]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#3B82F6] shrink-0" />
             <span className="text-xs font-bold text-[#1A1918]">Speaker 2:</span>
-            <select
-              value={langB.code}
-              onChange={(e) => {
-                const names: any = { spa: 'Spanish', cmn: 'Mandarin', ita: 'Italian', por: 'Portuguese', eng: 'English', fra: 'French' };
-                setLangB({ code: e.target.value, name: names[e.target.value] || e.target.value });
-              }}
-              className="text-xs font-bold text-[#3B82F6] bg-white border border-[#E0DBD0] rounded-lg px-2 py-1 cursor-pointer"
+            <button
+              onClick={() => setIsSelectingB(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#D1E0F5] hover:border-[#3B82F6] transition-all text-xs font-bold text-[#2563EB] shadow-xs cursor-pointer group"
             >
-              <option value="spa">Spanish (spa)</option>
-              <option value="cmn">Mandarin (cmn)</option>
-              <option value="ita">Italian (ita)</option>
-              <option value="por">Portuguese (por)</option>
-              <option value="eng">English (eng)</option>
-              <option value="fra">French (fra)</option>
-            </select>
+              <span className="group-hover:text-[#1A1918] transition-colors">{langB.name}</span>
+              <span className="text-[10px] font-mono bg-[#EFF6FF] px-1.5 py-0.2 rounded border border-[#BFDBFE]">
+                {langB.code.toUpperCase()}
+              </span>
+            </button>
           </div>
         </div>
 
@@ -425,6 +413,29 @@ export const ConversationView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Language Selector Modals */}
+      <LanguageSelectorModal
+        isOpen={isSelectingA}
+        onClose={() => setIsSelectingA(false)}
+        selectedCode={langA.code}
+        onSelect={(lang) => {
+          setLangA({ code: lang.iso_639_3, name: lang.name });
+        }}
+        title="Select Speaker 1 Language"
+        includeAutoDetect={false}
+      />
+
+      <LanguageSelectorModal
+        isOpen={isSelectingB}
+        onClose={() => setIsSelectingB(false)}
+        selectedCode={langB.code}
+        onSelect={(lang) => {
+          setLangB({ code: lang.iso_639_3, name: lang.name });
+        }}
+        title="Select Speaker 2 Language"
+        includeAutoDetect={false}
+      />
     </div>
   );
 };

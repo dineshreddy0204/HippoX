@@ -1291,24 +1291,30 @@ export class LanguageRegistryEngine {
     let results = this.getAllLanguages();
 
     if (q) {
+      const stripDiacritics = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const qNorm = stripDiacritics(q);
       const scored: { lang: Language; score: number }[] = [];
+
       for (const l of results) {
         let score = 0;
         const iso3 = l.iso_639_3.toLowerCase();
         const iso1 = l.iso_639_1?.toLowerCase() || '';
         const name = l.name.toLowerCase();
         const native = l.native_name.toLowerCase();
+        const nameNorm = stripDiacritics(name);
+        const nativeNorm = stripDiacritics(native);
         const alts = l.alternative_names ? l.alternative_names.map(a => a.toLowerCase()) : [];
+        const altsNorm = alts.map(a => stripDiacritics(a));
 
-        if (iso3 === q || iso1 === q || alts.includes(q)) {
+        if (iso3 === q || iso1 === q || alts.includes(q) || altsNorm.includes(qNorm)) {
           score = 1000;
-        } else if (name === q || native === q) {
-          score = 900;
-        } else if (name.startsWith(q) || native.startsWith(q)) {
-          score = 500;
-        } else if (name.includes(q) || native.includes(q)) {
-          score = 300;
-        } else if (alts.some(a => a.includes(q))) {
+        } else if (name === q || native === q || nameNorm === qNorm || nativeNorm === qNorm) {
+          score = 950;
+        } else if (name.startsWith(q) || native.startsWith(q) || nameNorm.startsWith(qNorm) || nativeNorm.startsWith(qNorm)) {
+          score = 600;
+        } else if (name.includes(q) || native.includes(q) || nameNorm.includes(qNorm) || nativeNorm.includes(qNorm)) {
+          score = 350;
+        } else if (alts.some(a => a.includes(q)) || altsNorm.some(a => a.includes(qNorm))) {
           score = 250;
         } else if (iso3.includes(q)) {
           score = 200;

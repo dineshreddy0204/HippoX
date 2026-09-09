@@ -3,6 +3,7 @@ import {
   Settings, Volume2, ShieldCheck, Globe, Bell, Trash2, 
   Check, Sliders, Moon, Sparkles
 } from 'lucide-react';
+import { LanguageSelectorModal } from '../components/LanguageSelectorModal';
 
 export const SettingsView: React.FC = () => {
   const [speechRate, setSpeechRate] = useState(1.0);
@@ -10,7 +11,11 @@ export const SettingsView: React.FC = () => {
   const [zeroDataRetention, setZeroDataRetention] = useState(true);
   const [telemetryConsent, setTelemetryConsent] = useState(true);
   const [defaultSource, setDefaultSource] = useState('auto');
+  const [defaultSourceName, setDefaultSourceName] = useState('Auto Detect Language');
   const [defaultTarget, setDefaultTarget] = useState('spa');
+  const [defaultTargetName, setDefaultTargetName] = useState('Spanish');
+  const [isSelectingSource, setIsSelectingSource] = useState(false);
+  const [isSelectingTarget, setIsSelectingTarget] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   const [cacheNotice, setCacheNotice] = useState<string | null>(null);
@@ -181,36 +186,29 @@ export const SettingsView: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div>
-            <label className="font-semibold text-[#1A1918] block mb-1">Default Source</label>
-            <select
-              value={defaultSource}
-              onChange={(e) => setDefaultSource(e.target.value)}
-              className="w-full px-3 py-2 bg-[#FAF8F5] border border-[#E0DBD0] rounded-xl font-bold cursor-pointer"
+            <label className="font-semibold text-[#1A1918] block mb-1.5">Default Source</label>
+            <button
+              onClick={() => setIsSelectingSource(true)}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#FAF8F5] border border-[#E0DBD0] hover:border-[#C5A059] rounded-xl font-bold text-[#8C6D23] transition-all cursor-pointer shadow-xs group"
             >
-              <option value="auto">Auto Detect Language</option>
-              <option value="eng">English (eng)</option>
-              <option value="fra">French (fra)</option>
-              <option value="spa">Spanish (spa)</option>
-              <option value="cmn">Mandarin (cmn)</option>
-            </select>
+              <span className="group-hover:text-[#1A1918] transition-colors">{defaultSourceName}</span>
+              <span className="text-[10px] font-mono bg-[#FAF4E6] px-2 py-0.5 rounded border border-[#EEDBBA]">
+                {defaultSource.toUpperCase()}
+              </span>
+            </button>
           </div>
 
           <div>
-            <label className="font-semibold text-[#1A1918] block mb-1">Default Target</label>
-            <select
-              value={defaultTarget}
-              onChange={(e) => setDefaultTarget(e.target.value)}
-              className="w-full px-3 py-2 bg-[#FAF8F5] border border-[#E0DBD0] rounded-xl font-bold cursor-pointer"
+            <label className="font-semibold text-[#1A1918] block mb-1.5">Default Target</label>
+            <button
+              onClick={() => setIsSelectingTarget(true)}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#FAF8F5] border border-[#E0DBD0] hover:border-[#C5A059] rounded-xl font-bold text-[#8C6D23] transition-all cursor-pointer shadow-xs group"
             >
-              <option value="spa">Spanish (spa)</option>
-              <option value="eng">English (eng)</option>
-              <option value="fra">French (fra)</option>
-              <option value="deu">German (deu)</option>
-              <option value="jpn">Japanese (jpn)</option>
-              <option value="cmn">Mandarin (cmn)</option>
-              <option value="hin">Hindi (hin)</option>
-              <option value="ara">Arabic (ara)</option>
-            </select>
+              <span className="group-hover:text-[#1A1918] transition-colors">{defaultTargetName}</span>
+              <span className="text-[10px] font-mono bg-[#FAF4E6] px-2 py-0.5 rounded border border-[#EEDBBA]">
+                {defaultTarget.toUpperCase()}
+              </span>
+            </button>
           </div>
         </div>
       </div>
@@ -224,6 +222,31 @@ export const SettingsView: React.FC = () => {
           Save All Changes
         </button>
       </div>
+
+      {/* Language Selector Modals */}
+      <LanguageSelectorModal
+        isOpen={isSelectingSource}
+        onClose={() => setIsSelectingSource(false)}
+        selectedCode={defaultSource}
+        onSelect={(lang) => {
+          setDefaultSource(lang.iso_639_3);
+          setDefaultSourceName(lang.name);
+        }}
+        title="Select Default Source Language"
+        includeAutoDetect={true}
+      />
+
+      <LanguageSelectorModal
+        isOpen={isSelectingTarget}
+        onClose={() => setIsSelectingTarget(false)}
+        selectedCode={defaultTarget}
+        onSelect={(lang) => {
+          setDefaultTarget(lang.iso_639_3);
+          setDefaultTargetName(lang.name);
+        }}
+        title="Select Default Target Language"
+        includeAutoDetect={false}
+      />
     </div>
   );
 };
