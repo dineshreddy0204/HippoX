@@ -1295,6 +1295,35 @@ export class LanguageRegistryEngine {
       const qNorm = stripDiacritics(q);
       const scored: { lang: Language; score: number }[] = [];
 
+      // Fast Damerau-Levenshtein implementation
+      const calcDist = (a: string, b: string): number => {
+        if (a === b) return 0;
+        const aLen = a.length;
+        const bLen = b.length;
+        if (Math.abs(aLen - bLen) > 3) return 99;
+        const d: number[][] = [];
+        for (let i = 0; i <= aLen; i++) {
+          d[i] = [];
+          d[i][0] = i;
+        }
+        for (let j = 0; j <= bLen; j++) d[0][j] = j;
+
+        for (let i = 1; i <= aLen; i++) {
+          for (let j = 1; j <= bLen; j++) {
+            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+            d[i][j] = Math.min(
+              d[i - 1][j] + 1,
+              d[i][j - 1] + 1,
+              d[i - 1][j - 1] + cost
+            );
+            if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+              d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+            }
+          }
+        }
+        return d[aLen][bLen];
+      };
+
       for (const l of results) {
         let score = 0;
         const iso3 = l.iso_639_3.toLowerCase();
@@ -1318,10 +1347,31 @@ export class LanguageRegistryEngine {
           score = 250;
         } else if (iso3.includes(q)) {
           score = 200;
-        } else if (l.language_family.toLowerCase().includes(q)) {
-          score = 50;
-        } else if (l.region.toLowerCase().includes(q)) {
-          score = 20;
+        } else {
+          // Fuzzy match evaluation for typos and transpositions
+          if (qNorm.length >= 3) {
+            const dName = calcDist(qNorm, nameNorm);
+            const dNative = calcDist(qNorm, nativeNorm);
+            let minAltDist = 99;
+            for (const alt of altsNorm) {
+              const d = calcDist(qNorm, alt);
+              if (d < minAltDist) minAltDist = d;
+            }
+            const minD = Math.min(dName, dNative, minAltDist);
+            if (minD === 1) {
+              score = 280;
+            } else if (minD === 2 && (qNorm.length >= 5 || nameNorm.length >= 5)) {
+              score = 220;
+            }
+          }
+        }
+
+        if (score === 0) {
+          if (l.language_family.toLowerCase().includes(q)) {
+            score = 50;
+          } else if (l.region.toLowerCase().includes(q)) {
+            score = 20;
+          }
         }
 
         if (score > 0) {
