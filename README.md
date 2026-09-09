@@ -14,7 +14,7 @@ Built with a modern **React + TypeScript + Vite** frontend and **Node.js + Expre
 
 ## 🚀 Live Demo
 
-> Add your deployed HippoX URL here.
+> https://hippox.ai.studio
 
 **[🌐 Launch HippoX](https://hippox.ai.studio)**
 
