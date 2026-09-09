@@ -1,4 +1,5 @@
 HippoX
+
 🌍 Universal Multilingual Translation & AI Conversation Platform
 Translate. Understand. Speak. Connect. — Across Languages.
 HippoX is a modern multilingual AI platform designed to bring translation, language discovery, voice interaction, document translation, grammar assistance, and conversational language workflows into one unified application.
@@ -151,7 +152,10 @@ GitHub
 npm
 Vite
 TypeScript
+
 📁 Project Structure
+
+
 HippoX-main/
 │
 ├── data/
@@ -227,8 +231,7 @@ The project .gitignore is configured to exclude environment files while keeping 
 ▶️ Run Locally
 Start the development server:
 npm run dev
-Then open:
-http://localhost:3000
+
 🏭 Production Build
 Build the frontend and backend:
 npm run build
@@ -242,7 +245,7 @@ HippoX exposes a REST API under:
 /api/v1
 Health
 GET /api/v1/health
-Languages
+Language
 GET /api/v1/languages
 GET /api/v1/languages/:code
 Language Detection
